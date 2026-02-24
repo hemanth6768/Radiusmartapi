@@ -24,6 +24,7 @@ class CategoryRepository:
     @staticmethod
     def update(db: Session, db_category: Category, updates: CategoryUpdate):
         update_data = updates.model_dump(exclude_unset=True)
+
         for key, value in update_data.items():
             setattr(db_category, key, value)
 

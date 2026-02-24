@@ -21,7 +21,6 @@ class CategoryUpdate(BaseModel):
     description: Optional[str] = None
     is_active: Optional[bool] = None
 
-
 # Response schema
 class CategoryResponse(CategoryBase):
     id: int

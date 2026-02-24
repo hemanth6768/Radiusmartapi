@@ -28,6 +28,7 @@ def update_category(category_id: int, updates: CategoryUpdate, db: Session = Dep
     return CategoryService.update_category(db, category_id, updates)
 
 
+
 @router.delete("/{category_id}")
 def delete_category(category_id: int, db: Session = Depends(get_db)):
     return CategoryService.delete_category(db, category_id)

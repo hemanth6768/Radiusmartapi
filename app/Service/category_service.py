@@ -31,9 +31,11 @@ class CategoryService:
 
     @staticmethod
     def update_category(db: Session, category_id: int, updates: CategoryUpdate):
+
         category = CategoryRepository.get_by_id(db, category_id)
+
         if not category:
-            raise HTTPException(status_code=404, detail="Category not found")
+          raise HTTPException(status_code=404, detail="Category not found")
 
         return CategoryRepository.update(db, category, updates)
 

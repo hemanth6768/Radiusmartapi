@@ -4,8 +4,8 @@ from app.models import category,order,orderItem,product
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import Base
 from app.Route.category_route import router as category_route
-
-
+from app.Route.product_route import router as product_router
+from app.Route.order_route import router as order_router
 app = FastAPI(title="Radius Market API")
 
 
@@ -27,6 +27,8 @@ app.add_middleware(
 Base.metadata.create_all(bind=engine)
 
 app.include_router(category_route)
+app.include_router(product_router)
+app.include_router(order_router)
 @app.get("/")
 def root():
     return {"message": "Radius Market Backend Running 🚀"}
