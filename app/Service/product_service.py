@@ -52,3 +52,14 @@ class ProductService:
 
         ProductRepository.delete(db, product)
         return {"message": "Product deleted successfully"}
+
+    
+    @staticmethod
+    def get_products_by_category(db: Session, category_id: int):
+
+    # Validate category exists
+        category = db.query(Category).filter(Category.id == category_id).first()
+        if not category:
+           raise HTTPException(status_code=404, detail="Category not found")
+
+        return ProductRepository.get_by_category(db, category_id)

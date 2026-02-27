@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 from datetime import datetime
 
 
@@ -14,9 +14,13 @@ class OrderCreate(BaseModel):
     customer_name: str
     customer_email: str
     customer_phone: str
-    customer_address: str
-    items: List[OrderItemCreate]
 
+    apartment_name: Optional[str] = None
+    door_number: Optional[str] = None
+
+    customer_address: str
+
+    items: List[OrderItemCreate]
 
 # ===== Order Item Response =====
 class OrderItemResponse(BaseModel):
@@ -36,6 +40,10 @@ class OrderResponse(BaseModel):
     customer_name: str
     customer_email: str
     customer_phone: str
+
+    apartment_name: Optional[str]
+    door_number: Optional[str]
+
     customer_address: str
     total_amount: float
     status: str

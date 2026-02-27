@@ -7,6 +7,7 @@ from datetime import datetime
 class CategoryBase(BaseModel):
     name: str
     description: Optional[str] = None
+    image_url:str
     is_active: Optional[bool] = True
 
 
@@ -25,6 +26,7 @@ class CategoryUpdate(BaseModel):
 class CategoryResponse(CategoryBase):
     id: int
     created_at: datetime
+    image_url:str
 
     class Config:
         from_attributes = True   # For SQLAlchemy ORM (Pydantic v2)

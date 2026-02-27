@@ -12,9 +12,9 @@ class Category(Base):
     name = Column(String(100), nullable=False, unique=True)
     description = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True)
-
+    image_url = Column(String(500), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-
+   
     # Relationship
     products = relationship("Product", back_populates="category", cascade="all, delete")

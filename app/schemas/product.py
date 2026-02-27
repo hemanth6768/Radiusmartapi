@@ -8,6 +8,7 @@ class ProductBase(BaseModel):
     name: str
     description: Optional[str] = None
     price: float
+    image_url: str
     stock_quantity: int
     category_id: int
     is_available: Optional[bool] = True

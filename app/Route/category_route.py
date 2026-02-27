@@ -13,7 +13,7 @@ def create_category(category: CategoryCreate, db: Session = Depends(get_db)):
     return CategoryService.create_category(db, category)
 
 
-@router.get("/", response_model=List[CategoryResponse])
+@router.get("/allcatagories", response_model=List[CategoryResponse])
 def get_categories(db: Session = Depends(get_db)):
     return CategoryService.get_categories(db)
 

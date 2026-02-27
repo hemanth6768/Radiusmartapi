@@ -1,11 +1,13 @@
 from fastapi import FastAPI
 from app.database import engine
-from app.models import category,order,orderItem,product
+from app.models import category,order,orderitem,product
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import Base
 from app.Route.category_route import router as category_route
 from app.Route.product_route import router as product_router
 from app.Route.order_route import router as order_router
+from fastapi.staticfiles import StaticFiles
+
 app = FastAPI(title="Radius Market API")
 
 
@@ -22,7 +24,7 @@ app.add_middleware(
     allow_headers=["*"],         # all headers
 )
 
-
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 Base.metadata.create_all(bind=engine)
 

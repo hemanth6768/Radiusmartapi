@@ -36,3 +36,7 @@ class ProductRepository:
     def delete(db: Session, db_product: Product):
         db.delete(db_product)
         db.commit()
+
+    @staticmethod
+    def get_by_category(db: Session, category_id: int):
+        return db.query(Product).filter(Product.category_id == category_id).all()
