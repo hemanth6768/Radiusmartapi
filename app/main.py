@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 from app.database import engine
-from app.models import category,order,orderitem,product
+from app.models.category import Category
+from app.models.order import Order
+from app.models.orderitem import OrderItem
+from app.models.product import product
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import Base
 from app.Route.category_route import router as category_route
