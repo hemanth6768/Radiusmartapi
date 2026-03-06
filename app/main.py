@@ -3,7 +3,7 @@ from app.database import engine
 from app.models.category import Category
 from app.models.order import Order
 from app.models.orderitem import OrderItem
-from app.models.product import product
+from app.models.product import Product
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import Base
 from app.Route.category_route import router as category_route
