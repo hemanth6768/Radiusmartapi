@@ -1,7 +1,7 @@
-from sqlalchemy import Column, Integer, String, Text, Float, ForeignKey, DateTime, Boolean
+from sqlalchemy import Column, Integer, Float, String, ForeignKey
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
-from app.database import Base  # your declarative base
+from app.database import Base
+
 
 class OrderItem(Base):
     __tablename__ = "order_items"
@@ -9,12 +9,17 @@ class OrderItem(Base):
     id = Column(Integer, primary_key=True, index=True)
 
     order_id = Column(Integer, ForeignKey("orders.id", ondelete="CASCADE"))
-    product_id = Column(Integer, ForeignKey("products.id"))
 
-    quantity = Column(Integer, nullable=False)
+    variant_id = Column(Integer, ForeignKey("product_variants.id"))
+
+    quantity = Column(Float, nullable=False)
+
+    unit = Column(String(20), nullable=True)
+
     price_per_unit = Column(Float, nullable=False)
+
     total_price = Column(Float, nullable=False)
 
-    # Relationships
     order = relationship("Order", back_populates="order_items")
-    product = relationship("Product", back_populates="order_items")
+
+    variant = relationship("ProductVariant", back_populates="order_items")

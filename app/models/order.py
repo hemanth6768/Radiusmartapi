@@ -12,15 +12,16 @@ class Order(Base):
     id = Column(Integer, primary_key=True, index=True)
 
     customer_name = Column(String(200), nullable=False)
+
     customer_email = Column(String(200), nullable=False)
+
     customer_phone = Column(String(20), nullable=False)
 
-    # 🔥 New structured address fields
     apartment_name = Column(String(200), nullable=True)
+
     door_number = Column(String(50), nullable=True)
 
-    customer_address = Column(Text, nullable=False)  
-    # Street, landmark, area etc.
+    customer_address = Column(Text, nullable=False)
 
     total_amount = Column(Float, nullable=False)
 

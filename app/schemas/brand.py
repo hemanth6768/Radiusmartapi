@@ -3,25 +3,23 @@ from typing import Optional
 from datetime import datetime
 
 
-class CategoryBase(BaseModel):
+class BrandBase(BaseModel):
     name: str
+    logo_url: Optional[str] = None
     description: Optional[str] = None
-    image_url: Optional[str] = None
-    is_active: Optional[bool] = True
 
 
-class CategoryCreate(CategoryBase):
+class BrandCreate(BrandBase):
     pass
 
 
-class CategoryUpdate(BaseModel):
+class BrandUpdate(BaseModel):
     name: Optional[str] = None
+    logo_url: Optional[str] = None
     description: Optional[str] = None
-    image_url: Optional[str] = None
-    is_active: Optional[bool] = None
 
 
-class CategoryResponse(CategoryBase):
+class BrandResponse(BrandBase):
     id: int
     created_at: datetime
 

@@ -1,38 +1,71 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 
-# Shared fields
+# -------------------------
+# Variant Schemas
+# -------------------------
+
+class VariantBase(BaseModel):
+    pricing_model: str
+    base_unit: str
+    value: Optional[float] = None
+    base_price: float
+    stock_quantity: float
+    image_url: Optional[str] = None
+    offer_id: Optional[int] = None
+
+
+class VariantCreate(VariantBase):
+    pass
+
+class VariantUpdate(BaseModel):
+    pricing_model: Optional[str] = None
+    base_unit: Optional[str] = None
+    value: Optional[float] = None
+    base_price: Optional[float] = None
+    stock_quantity: Optional[float] = None
+    image_url: Optional[str] = None
+    offer_id: Optional[int] = None
+
+class VariantResponse(VariantBase):
+    id: int
+
+    class Config:
+        from_attributes = True
+
+
+# -------------------------
+# Product Schemas
+# -------------------------
+
 class ProductBase(BaseModel):
     name: str
     description: Optional[str] = None
-    price: float
-    image_url: str
-    stock_quantity: int
     category_id: int
+    brand_id: Optional[int] = None
+    image_url: Optional[str] = None
     is_available: Optional[bool] = True
 
 
-# Create
 class ProductCreate(ProductBase):
-    pass
+    variants: List[VariantCreate]
 
 
-# Update (Partial)
 class ProductUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
-    price: Optional[float] = None
-    stock_quantity: Optional[int] = None
     category_id: Optional[int] = None
+    brand_id: Optional[int] = None
+    image_url: Optional[str] = None
     is_available: Optional[bool] = None
 
 
-# Response
 class ProductResponse(ProductBase):
     id: int
     created_at: datetime
+    variants: List[VariantResponse] = []
 
     class Config:
         from_attributes = True
