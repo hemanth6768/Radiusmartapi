@@ -4,6 +4,30 @@ from datetime import datetime
 
 
 # -------------------------
+# Brand Schema (for response)
+# -------------------------
+
+class BrandResponse(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        from_attributes = True
+
+
+# -------------------------
+# Category Schema (optional but useful)
+# -------------------------
+
+class CategoryResponse(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        from_attributes = True
+
+
+# -------------------------
 # Variant Schemas
 # -------------------------
 
@@ -20,6 +44,7 @@ class VariantBase(BaseModel):
 class VariantCreate(VariantBase):
     pass
 
+
 class VariantUpdate(BaseModel):
     pricing_model: Optional[str] = None
     base_unit: Optional[str] = None
@@ -28,6 +53,7 @@ class VariantUpdate(BaseModel):
     stock_quantity: Optional[float] = None
     image_url: Optional[str] = None
     offer_id: Optional[int] = None
+
 
 class VariantResponse(VariantBase):
     id: int
@@ -62,9 +88,17 @@ class ProductUpdate(BaseModel):
     is_available: Optional[bool] = None
 
 
-class ProductResponse(ProductBase):
+class ProductResponse(BaseModel):
     id: int
+    name: str
+    description: Optional[str]
+    image_url: Optional[str]
+    is_active: bool
     created_at: datetime
+
+    brand: Optional[BrandResponse]
+    category: Optional[CategoryResponse]
+
     variants: List[VariantResponse] = []
 
     class Config:

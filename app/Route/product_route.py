@@ -28,6 +28,12 @@ def get_product(product_id: int, db: Session = Depends(get_db)):
     return ProductService.get_product(db, product_id)
 
 
+
+@router.get("/category/{category_id}", response_model=List[ProductResponse])
+def get_products_by_category(category_id: int, db: Session = Depends(get_db)):
+    return ProductService.get_products_by_category(db, category_id)
+
+
 @router.put("/{product_id}", response_model=ProductResponse)
 def update_product(product_id: int, updates: ProductUpdate, db: Session = Depends(get_db)):
     return ProductService.update_product(db, product_id, updates)

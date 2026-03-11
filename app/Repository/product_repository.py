@@ -1,7 +1,7 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session,joinedload
 from app.models.product import Product
 from app.models.productvariant import ProductVariant
-
+from fastapi import HTTPException
 
 class ProductRepository:
 
@@ -41,13 +41,79 @@ class ProductRepository:
 
     @staticmethod
     def get_all_products(db: Session):
-        return db.query(Product).all()
+        try:
+            products = (
+                db.query(Product)
+                .options(
+                    joinedload(Product.brand),
+                    joinedload(Product.category),
+                    joinedload(Product.variants)
+                )
+                .all()
+            )
 
+            if not products:
+                raise HTTPException(
+                    status_code=404,
+                    detail="No products found"
+                )
+
+            return products
+
+        except HTTPException:
+            raise
+
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to fetch products: {str(e)}"
+            )
+        
 
     @staticmethod
     def get_product_by_id(db: Session, product_id: int):
-        return db.query(Product).filter(Product.id == product_id).first()
 
+        product = (
+            db.query(Product)
+            .options(
+                joinedload(Product.brand),
+                joinedload(Product.category),
+                joinedload(Product.variants)
+            )
+            .filter(Product.id == product_id)
+            .first()
+        )
+
+        return product
+    
+
+    @staticmethod
+    def get_products_by_category(db, category_id: int):
+        try:
+            products = (
+                db.query(Product)
+                .filter(Product.category_id == category_id)
+                .options(
+                    joinedload(Product.brand),
+                    joinedload(Product.category),
+                    joinedload(Product.variants)
+                )
+                .all()
+            )
+
+            if not products:
+                raise HTTPException(
+                    status_code=404,
+                    detail="No products found for this category"
+                )
+
+            return products
+
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to fetch products"
+            )
 
     @staticmethod
     def update_product(db: Session, product: Product, updates):

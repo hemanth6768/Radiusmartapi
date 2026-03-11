@@ -35,8 +35,19 @@ class ProductService:
     
     @staticmethod
     def get_products(db: Session):
-        return ProductRepository.get_all_products(db)
 
+        products = ProductRepository.get_all_products(db)
+
+        for product in products:
+
+          if product.image_url:
+             product.image_url = f"/static/{product.image_url}"
+
+          for variant in product.variants:
+              if variant.image_url:
+                variant.image_url = f"/static/{variant.image_url}"
+
+        return products
 
     @staticmethod
     def get_product(db: Session, product_id: int):
@@ -48,6 +59,22 @@ class ProductService:
 
         return product
 
+    
+    @staticmethod
+    def get_products_by_category(db, category_id: int):
+        products = ProductRepository.get_products_by_category(db,category_id)
+
+        for product in products:
+
+          if product.image_url:
+             product.image_url = f"/static/{product.image_url}"
+
+          for variant in product.variants:
+              if variant.image_url:
+                variant.image_url = f"/static/{variant.image_url}"
+
+        return products
+    
 
     @staticmethod
     def update_product(db: Session, product_id: int, updates: ProductUpdate):

@@ -13,6 +13,7 @@ from app.Route.category_route import router as category_route
 from app.Route.product_route import router as product_router
 from app.Route.order_route import router as order_router
 from app.Route.brand_route import router as brand_router
+from app.Route.offer_route import router as offer_router
 from fastapi.staticfiles import StaticFiles
 
 
@@ -44,6 +45,7 @@ app.include_router(category_route)
 app.include_router(product_router)
 app.include_router(order_router)
 app.include_router(brand_router)
+app.include_router(offer_router)
 
 
 @app.get("/")
