@@ -115,6 +115,21 @@ class ProductRepository:
                 detail="Failed to fetch products"
             )
 
+
+    @staticmethod
+    def get_products_by_brand(db: Session, brand_id: int):
+
+        return (
+            db.query(Product)
+            .options(
+                joinedload(Product.brand),
+                joinedload(Product.category),
+                joinedload(Product.variants)
+            )
+            .filter(Product.brand_id == brand_id)
+            .all()
+        )
+
     @staticmethod
     def update_product(db: Session, product: Product, updates):
 

@@ -28,6 +28,7 @@ app = FastAPI(lifespan=lifespan)
 
 origins = [
     "http://localhost:8080"
+    "https://radiusmartui-dbb3cxgjb4f6h4du.centralindia-01.azurewebsites.net"
 ]
 
 app.add_middleware(

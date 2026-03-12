@@ -55,7 +55,16 @@ class ProductService:
         product = ProductRepository.get_product_by_id(db, product_id)
 
         if not product:
-            raise HTTPException(404, "Product not found")
+            raise HTTPException(status_code=404, detail="Product not found")
+
+    # Product image
+        if product.image_url:
+           product.image_url = f"/static/{product.image_url}"
+
+    # Variant images
+        for variant in product.variants:
+           if variant.image_url:
+               variant.image_url = f"/static/{variant.image_url}"
 
         return product
 
@@ -75,6 +84,20 @@ class ProductService:
 
         return products
     
+
+    @staticmethod
+    def get_products_by_brand(db: Session, brand_id: int):
+
+        products = ProductRepository.get_products_by_brand(db, brand_id)
+
+        if not products:
+            raise HTTPException(status_code=404, detail="No products found for this brand")
+
+        for product in products:
+            if product.image_url:
+                product.image_url = f"/static/{product.image_url}"
+
+        return products
 
     @staticmethod
     def update_product(db: Session, product_id: int, updates: ProductUpdate):

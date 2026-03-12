@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 
 DATABASE_URL = (
     "mssql+pyodbc://hemanth:Br3Zf6kcf1!P@radiusmart.database.windows.net:1433/Radiusmart"
-    "?driver=ODBC+Driver+18+for+SQL+Server"
+     "?driver=ODBC+Driver+18+for+SQL+Server"
     "&Encrypt=yes"
     "&TrustServerCertificate=no"
 )
