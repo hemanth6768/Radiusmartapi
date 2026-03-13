@@ -2,8 +2,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
 # DATABASE_URL = ( 
-#     "mssql+pyodbc://ghr:8888@localhost/Radiusmart"
-#     "?driver=ODBC+Driver+17+for+SQL+Server"
+#      "mssql+pyodbc://ghr:8888@localhost/Radiusmart"
+#    "?driver=ODBC+Driver+17+for+SQL+Server"
 # )
 
 DATABASE_URL = (
