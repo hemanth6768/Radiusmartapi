@@ -9,6 +9,19 @@ from app.models.productvariant import ProductVariant
 from app.models.offer import Offer
 from app.models.order import Order
 from app.models.orderitem import OrderItem
+from app.models.offervariant import OfferVariant
+from app.models.section import Section
+from app.models.productvariant import ProductVariant
+from app.models.audit_log import AuthAuditLog
+from app.models.emailverification import EmailVerificationToken
+from app.models.oauthaccount import OAuthAccount
+from app.models.password_reset_token import PasswordResetToken
+from app.models.permission import Permission
+from app.models.rolepermission import RolePermission
+from app.models.role import Role
+from app.models.user import User
+from app.models.userrole import UserRole
+from app.models.session import Session
 from alembic import context
 
 # this is the Alembic Config object, which provides

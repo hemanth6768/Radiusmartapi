@@ -10,7 +10,7 @@ class Brand(Base):
     
     __tablename__ = "brands"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
 
     name = Column(String(200), nullable=False, unique=True)
 

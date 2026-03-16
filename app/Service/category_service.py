@@ -12,18 +12,50 @@ class CategoryService:
     @staticmethod
     def create_category(db: Session, category: CategoryCreate):
 
-        existing = db.query(Category).filter(Category.name == category.name).first()
+        existing = CategoryRepository.get_by_name_and_section(
+            db, category.name, category.section_id
+        )
 
         if existing:
-            raise HTTPException(status_code=400, detail="Category already exists")
+            raise HTTPException(status_code=400, detail="Category already exists in this section")
 
         return CategoryRepository.create(db, category)
 
 
     @staticmethod
-    def get_categories(db: Session):
-        return CategoryRepository.get_all(db)
+    def get_categories(db: Session, section_id: int | None = None):
 
+        if section_id:
+            return CategoryRepository.get_by_section(db, section_id)
+
+        return CategoryRepository.get_all(db)
+    
+    @staticmethod
+    def get_sections_with_categories(db: Session):
+
+      sections = CategoryRepository.get_sections_with_categories(db)
+
+      if not sections:
+        raise HTTPException(status_code=404, detail="No sections found")
+
+      for section in sections:
+
+        # Add static prefix for section image
+          if section.image_url:
+             section.image_url = f"/static/{section.image_url}"
+
+          for category in section.categories:
+
+            # Add static prefix for category image
+             if category.image_url:
+                 category.image_url = f"/static/{category.image_url}"
+
+      return sections
+    
+
+    @staticmethod
+    def get_categories(db: Session):
+       return CategoryRepository.get_all(db)
 
     @staticmethod
     def get_category(db: Session, category_id: int):
