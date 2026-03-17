@@ -1,237 +1,94 @@
-from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from app.Repository.product_repository import ProductRepository
+from app.core.logger import logger
 from app.schemas.pagination import CursorPage
-from app.schemas.product import ProductCreate, ProductUpdate, VariantUpdate
 from app.utils.pagination import encode_cursor, decode_cursor
-from typing import List
 from app.models.category import Category
 from app.models.brand import Brand
 
 
 class ProductService:
 
+    def __init__(self, repo: ProductRepository):
+        self.repo = repo
 
-    # Create product
-    @staticmethod
-    def create_product(db: Session, product: ProductCreate):
-
-        category = db.query(Category).filter(
-            Category.id == product.category_id
-        ).first()
-
-        if not category:
-            raise HTTPException(400, "Invalid category")
-
-        if product.brand_id:
-
-            brand = db.query(Brand).filter(
-                Brand.id == product.brand_id
-            ).first()
-
-            if not brand:
-                raise HTTPException(400, "Invalid brand")
-
+    def create_product(self, product):
         if len(product.variants) == 0:
             raise HTTPException(400, "At least one variant required")
 
-        return ProductRepository.create_product_with_variants(db, product)
+        return self.repo.create_product_with_variants(product)
 
-    @staticmethod
-    def create_products_bulk(db: Session, products: List[ProductCreate]):
+    def get_products(self, cursor, limit):
+        last_id = decode_cursor(cursor)["id"] if cursor else None
 
-        created_products = []
-
-        for product in products:
-
-            category = db.query(Category).filter(
-                Category.id == product.category_id
-            ).first()
-
-            if not category:
-                raise HTTPException(400, f"Invalid category {product.category_id}")
-
-            if product.brand_id:
-                brand = db.query(Brand).filter(
-                    Brand.id == product.brand_id
-                ).first()
-
-                if not brand:
-                    raise HTTPException(400, f"Invalid brand {product.brand_id}")
-
-            if len(product.variants) == 0:
-                raise HTTPException(400, "At least one variant required")
-
-            created_product = ProductRepository.create_bulk_product_with_variants(
-                db, product
-            )
-
-            created_products.append(created_product)
-
-        return created_products
-    # Cursor pagination for products
-    @staticmethod
-    def get_products(db: Session, cursor: str | None, limit: int):
-
-        last_id = None
-
-        if cursor:
-            decoded = decode_cursor(cursor)
-            last_id = decoded["id"]
-
-        products = ProductRepository.get_products_cursor(db, last_id, limit)
+        products = self.repo.get_products_cursor(last_id, limit)
 
         has_more = len(products) > limit
         items = products[:limit]
 
-        next_cursor = None
+        next_cursor = encode_cursor({"id": items[-1].id}) if has_more else None
 
-        if has_more:
-            next_cursor = encode_cursor({"id": items[-1].id})
+        self._prepare_images(items)
 
-        ProductService._prepare_images(items)
+        return CursorPage(items=items, next_cursor=next_cursor, has_more=has_more)
 
-        return CursorPage(
-            items=items,
-            next_cursor=next_cursor,
-            has_more=has_more
-        )
-
-
-    # Products by category
-    @staticmethod
-    def get_products_by_category(db, category_id, cursor, limit):
-
-        last_id = None
-
-        if cursor:
-            decoded = decode_cursor(cursor)
-            last_id = decoded["id"]
-
-        products = ProductRepository.get_products_by_category_cursor(
-            db, category_id, last_id, limit
-        )
-
-        has_more = len(products) > limit
-        items = products[:limit]
-
-        next_cursor = None
-
-        if has_more:
-            next_cursor = encode_cursor({"id": items[-1].id})
-
-        ProductService._prepare_images(items)
-
-        return CursorPage(
-            items=items,
-            next_cursor=next_cursor,
-            has_more=has_more
-        )
-
-
-    # Products by brand
-    @staticmethod
-    def get_products_by_brand(db, brand_id, cursor, limit):
-
-        last_id = None
-
-        if cursor:
-            decoded = decode_cursor(cursor)
-            last_id = decoded["id"]
-
-        products = ProductRepository.get_products_by_brand_cursor(
-            db, brand_id, last_id, limit
-        )
-
-        has_more = len(products) > limit
-        items = products[:limit]
-
-        next_cursor = None
-
-        if has_more:
-            next_cursor = encode_cursor({"id": items[-1].id})
-
-        ProductService._prepare_images(items)
-
-        return CursorPage(
-            items=items,
-            next_cursor=next_cursor,
-            has_more=has_more
-        )
-
-
-    # Single product
-    @staticmethod
-    def get_product(db: Session, product_id: int):
-
-        product = ProductRepository.get_product_by_id(db, product_id)
+    def get_product(self, product_id: int):
+        product = self.repo.get_product_by_id(product_id)
 
         if not product:
+            logger.warning(f"Product not found id={product_id}")
             raise HTTPException(404, "Product not found")
 
-        ProductService._prepare_images([product])
-
+        self._prepare_images([product])
         return product
 
+    def get_products_by_category(self, category_id, cursor, limit):
+        last_id = decode_cursor(cursor)["id"] if cursor else None
 
-    # Update product
-    @staticmethod
-    def update_product(db: Session, product_id: int, updates: ProductUpdate):
+        products = self.repo.get_products_by_category_cursor(category_id, last_id, limit)
 
-        product = ProductRepository.get_product_by_id(db, product_id)
+        has_more = len(products) > limit
+        items = products[:limit]
+
+        next_cursor = encode_cursor({"id": items[-1].id}) if has_more else None
+
+        self._prepare_images(items)
+
+        return CursorPage(items=items, next_cursor=next_cursor, has_more=has_more)
+
+    def get_products_by_brand(self, brand_id, cursor, limit):
+        last_id = decode_cursor(cursor)["id"] if cursor else None
+
+        products = self.repo.get_products_by_brand_cursor(brand_id, last_id, limit)
+
+        has_more = len(products) > limit
+        items = products[:limit]
+
+        next_cursor = encode_cursor({"id": items[-1].id}) if has_more else None
+
+        self._prepare_images(items)
+
+        return CursorPage(items=items, next_cursor=next_cursor, has_more=has_more)
+
+    def update_product(self, product_id, updates):
+        product = self.repo.get_product_by_id(product_id)
 
         if not product:
             raise HTTPException(404, "Product not found")
 
-        return ProductRepository.update_product(db, product, updates)
+        return self.repo.update_product(product, updates)
 
-
-    # Delete product
-    @staticmethod
-    def delete_product(db: Session, product_id: int):
-
-        product = ProductRepository.get_product_by_id(db, product_id)
+    def delete_product(self, product_id):
+        product = self.repo.get_product_by_id(product_id)
 
         if not product:
             raise HTTPException(404, "Product not found")
 
-        ProductRepository.delete_product(db, product)
-
+        self.repo.delete_product(product)
         return {"message": "Product deleted successfully"}
 
-
-    # Update variant
-    @staticmethod
-    def update_variant(db: Session, variant_id: int, updates: VariantUpdate):
-
-        variant = ProductRepository.get_variant_by_id(db, variant_id)
-
-        if not variant:
-            raise HTTPException(404, "Variant not found")
-
-        return ProductRepository.update_variant(db, variant, updates)
-
-
-    # Delete variant
-    @staticmethod
-    def delete_variant(db: Session, variant_id: int):
-
-        variant = ProductRepository.get_variant_by_id(db, variant_id)
-
-        if not variant:
-            raise HTTPException(404, "Variant not found")
-
-        ProductRepository.delete_variant(db, variant)
-
-        return {"message": "Variant deleted successfully"}
-
-
-    # Helper to prepare static image URLs
-    @staticmethod
-    def _prepare_images(products):
-
+    def _prepare_images(self, products):
         for product in products:
-
             if product.image_url:
                 product.image_url = f"/static/{product.image_url}"
 

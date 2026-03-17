@@ -1,129 +1,112 @@
+# app/repository/auth_repository.py
+
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-from fastapi import HTTPException, status
+from sqlalchemy.exc import SQLAlchemyError
+
 from app.models.user import User
 from app.models.role import Role
 from app.models.permission import Permission
 from app.models.userrole import UserRole
 from app.models.rolepermission import RolePermission
 
+from app.core.logger import logger
+
 
 class AuthRepository:
 
-    @staticmethod
-    def get_user_by_email(db: Session, email: str):
-        try:
-            return db.query(User).filter(User.email == email).first()
-        except SQLAlchemyError:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Database error while fetching user"
-            )
+    def __init__(self, db: Session):
+        self.db = db
 
-    @staticmethod
-    def create_user(db: Session, user):
+    def get_user_by_email(self, email: str):
         try:
-            db.add(user)
-            db.commit()
-            db.refresh(user)
+            logger.info(f"[Repo] Fetching user by email: {email}")
+
+            user = self.db.query(User).filter(User.email == email).first()
+
+            if user:
+                logger.info(f"[Repo] User found: {email}")
+            else:
+                logger.info(f"[Repo] User not found: {email}")
+
             return user
 
-        except IntegrityError:
-            db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="User with this email already exists"
-            )
+        except SQLAlchemyError as e:
+            logger.error(f"[Repo] DB error in get_user_by_email: {str(e)}")
+            raise
 
-        except SQLAlchemyError:
-            db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create user"
-            )
 
-    @staticmethod
-    def create_role(db: Session, role):
+    def create_user(self, user: User):
         try:
-            db.add(role)
-            db.commit()
-            db.refresh(role)
+            logger.info(f"[Repo] Creating user: {user.email}")
+
+            self.db.add(user)
+            self.db.flush()
+
+            logger.info(f"[Repo] User staged for commit: {user.email}")
+
+            return user
+
+        except SQLAlchemyError as e:
+            logger.error(f"[Repo] Error creating user: {str(e)}")
+            raise
+
+
+    def create_role(self, role: Role):
+        try:
+            logger.info(f"[Repo] Creating role: {role.name}")
+
+            self.db.add(role)
+            self.db.flush()
+
             return role
 
-        except IntegrityError:
-            db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Role already exists"
-            )
+        except SQLAlchemyError as e:
+            logger.error(f"[Repo] Error creating role: {str(e)}")
+            raise
 
-        except SQLAlchemyError:
-            db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create role"
-            )
 
-    @staticmethod
-    def create_permission(db: Session, permission):
+    def create_permission(self, permission: Permission):
         try:
-            db.add(permission)
-            db.commit()
-            db.refresh(permission)
+            logger.info(f"[Repo] Creating permission: {permission.name}")
+
+            self.db.add(permission)
+            self.db.flush()
+
             return permission
 
-        except IntegrityError:
-            db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Permission already exists"
-            )
+        except SQLAlchemyError as e:
+            logger.error(f"[Repo] Error creating permission: {str(e)}")
+            raise
 
-        except SQLAlchemyError:
-            db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create permission"
-            )
 
-    @staticmethod
-    def assign_role(db: Session, user_role):
+    def assign_role(self, user_role: UserRole):
         try:
-            db.add(user_role)
-            db.commit()
+            logger.info(
+                f"[Repo] Assigning role {user_role.role_id} to user {user_role.user_id}"
+            )
+
+            self.db.add(user_role)
+            self.db.flush()
+
             return user_role
 
-        except IntegrityError:
-            db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Role already assigned to user"
-            )
+        except SQLAlchemyError as e:
+            logger.error(f"[Repo] Error assigning role: {str(e)}")
+            raise
 
-        except SQLAlchemyError:
-            db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to assign role"
-            )
 
-    @staticmethod
-    def assign_permission(db: Session, role_permission):
+    def assign_permission(self, role_permission: RolePermission):
         try:
-            db.add(role_permission)
-            db.commit()
+            logger.info(
+                f"[Repo] Assigning permission {role_permission.permission_id} "
+                f"to role {role_permission.role_id}"
+            )
+
+            self.db.add(role_permission)
+            self.db.flush()
+
             return role_permission
 
-        except IntegrityError:
-            db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Permission already assigned"
-            )
-
-        except SQLAlchemyError:
-            db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to assign permission"
-            )
+        except SQLAlchemyError as e:
+            logger.error(f"[Repo] Error assigning permission: {str(e)}")
+            raise

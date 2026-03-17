@@ -1,46 +1,80 @@
 from sqlalchemy.orm import Session
 from app.models.brand import Brand
 from app.schemas.brand import BrandCreate, BrandUpdate
+from app.core.logger import logger
 
 
 class BrandRepository:
 
-    @staticmethod
-    def create(db: Session, brand: BrandCreate):
-        db_brand = Brand(**brand.model_dump())
+    def __init__(self, db: Session):
+        self.db = db
 
-        db.add(db_brand)
-        db.commit()
-        db.refresh(db_brand)
+    def create(self, brand: BrandCreate):
+        try:
+            db_brand = Brand(**brand.model_dump())
 
-        return db_brand
+            self.db.add(db_brand)
+            self.db.commit()
+            self.db.refresh(db_brand)
 
+            logger.info(f"Brand created id={db_brand.id}")
+            return db_brand
 
-    @staticmethod
-    def get_all(db: Session):
-        return db.query(Brand).all()
+        except Exception as e:
+            logger.error(f"Error creating brand: {str(e)}")
+            self.db.rollback()
+            raise
 
+    def get_all(self):
+        return (
+            self.db.query(Brand)
+            .filter(Brand.is_active == True)
+            .order_by(Brand.id)
+            .all()
+        )
 
-    @staticmethod
-    def get_by_id(db: Session, brand_id: int):
-        return db.query(Brand).filter(Brand.id == brand_id).first()
+    def get_by_id(self, brand_id: int):
+        return (
+            self.db.query(Brand)
+            .filter(Brand.id == brand_id)
+            .first()
+        )
 
+    def get_by_name(self, name: str):
+        return (
+            self.db.query(Brand)
+            .filter(Brand.name == name)
+            .first()
+        )
 
-    @staticmethod
-    def update(db: Session, db_brand: Brand, updates: BrandUpdate):
+    def update(self, db_brand: Brand, updates: BrandUpdate):
+        try:
+            update_data = updates.model_dump(exclude_unset=True)
 
-        update_data = updates.model_dump(exclude_unset=True)
+            for key, value in update_data.items():
+                setattr(db_brand, key, value)
 
-        for key, value in update_data.items():
-            setattr(db_brand, key, value)
+            self.db.commit()
+            self.db.refresh(db_brand)
 
-        db.commit()
-        db.refresh(db_brand)
+            logger.info(f"Brand updated id={db_brand.id}")
+            return db_brand
 
-        return db_brand
+        except Exception as e:
+            logger.error(f"Error updating brand: {str(e)}")
+            self.db.rollback()
+            raise
 
+    def delete(self, db_brand: Brand):
+        try:
+            # ✅ Soft delete (recommended)
+            db_brand.is_active = False
+            self.db.commit()
 
-    @staticmethod
-    def delete(db: Session, db_brand: Brand):
-        db.delete(db_brand)
-        db.commit()
+            logger.info(f"Brand deleted id={db_brand.id}")
+            return db_brand
+
+        except Exception as e:
+            logger.error(f"Error deleting brand: {str(e)}")
+            self.db.rollback()
+            raise

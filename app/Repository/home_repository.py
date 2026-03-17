@@ -1,30 +1,32 @@
-from sqlalchemy.orm import Session ,joinedload
+from sqlalchemy.orm import Session, joinedload
 from app.models.section import Section
 from app.models.category import Category
 from app.models.product import Product
+from app.core.logger import logger
 
 
 class HomeRepository:
 
-    @staticmethod
-    def get_sections(db: Session):
-        return db.query(Section).all()
+    def __init__(self, db: Session):
+        self.db = db
 
-    @staticmethod
-    def get_categories_by_section(db: Session, section_id: int):
+    # Get sections with categories (optimized)
+    def get_sections_with_categories(self):
         return (
-            db.query(Category)
-            .filter(Category.section_id == section_id)
+            self.db.query(Section)
+            .options(joinedload(Section.categories))
+            .filter(Section.is_active == True)
+            .order_by(Section.display_order)
             .all()
         )
 
-    @staticmethod
-    def get_products_by_category(db: Session, category_id: int, limit: int = 5):
+    # Get products for multiple categories (optimized)
+    def get_products_by_category_ids(self, category_ids, limit=5):
         return (
-            db.query(Product)
+            self.db.query(Product)
             .options(joinedload(Product.variants))
-            .filter(Product.category_id == category_id)
+            .filter(Product.category_id.in_(category_ids))
+            .filter(Product.is_active == True)
             .order_by(Product.id)
-            .limit(limit)
             .all()
         )

@@ -1,19 +1,21 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
+import os
+from dotenv import load_dotenv
 
-DATABASE_URL = ( 
-     "mssql+pyodbc://ghr:8888@localhost/Radiusmart"
-  "?driver=ODBC+Driver+17+for+SQL+Server"
+# Load .env (only works locally, ignored in Azure)
+load_dotenv()
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL is not set")
+
+engine = create_engine(
+    DATABASE_URL,
+    echo=True,            # optional (disable in prod later)
+    pool_pre_ping=True    # avoids stale connections (important for Azure)
 )
-
-# DATABASE_URL = (
-#     "mssql+pyodbc://hemanth:Br3Zf6kcf1!P@radiusmart.database.windows.net:1433/Radiusmart"
-#      "?driver=ODBC+Driver+18+for+SQL+Server"
-#     "&Encrypt=yes"
-#     "&TrustServerCertificate=no"
-# )
-
-engine = create_engine(DATABASE_URL, echo=True)
 
 SessionLocal = sessionmaker(
     autocommit=False,
@@ -21,13 +23,11 @@ SessionLocal = sessionmaker(
     bind=engine
 )
 
-
 def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
-
 
 Base = declarative_base()
