@@ -1,20 +1,12 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
-import os
-from dotenv import load_dotenv
 
-# Load .env (only works locally, ignored in Azure)
-load_dotenv()
-
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-if not DATABASE_URL:
-    raise ValueError("DATABASE_URL is not set")
+DATABASE_URL = "mssql+pyodbc://ghr:Hemanth12345@13.90.39.2:1433/Radiusmart?driver=ODBC+Driver+17+for+SQL+Server"
 
 engine = create_engine(
     DATABASE_URL,
-    echo=True,            # optional (disable in prod later)
-    pool_pre_ping=True    # avoids stale connections (important for Azure)
+    echo=True,
+    pool_pre_ping=True
 )
 
 SessionLocal = sessionmaker(
