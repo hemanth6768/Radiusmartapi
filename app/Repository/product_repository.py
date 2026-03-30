@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session, joinedload
 from app.models.product import Product
 from app.models.productvariant import ProductVariant
+from app.models.offervariant import OfferVariant
 from app.core.logger import logger
 
 
@@ -54,6 +55,8 @@ class ProductRepository:
                 joinedload(Product.brand),
                 joinedload(Product.category),
                 joinedload(Product.variants)
+                    .joinedload(ProductVariant.offer_variants)
+                    .joinedload(OfferVariant.offer)   # ← chain through join table
             )
             .filter(Product.is_active == True)
             .order_by(Product.id)

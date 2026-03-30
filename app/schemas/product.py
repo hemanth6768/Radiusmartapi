@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, model_validator
 from typing import Optional, List
 from datetime import datetime
 
@@ -42,6 +42,17 @@ class OfferResponse(BaseModel):
 
 
 # -------------------------
+# OfferVariant Schema (join table — internal only)
+# -------------------------
+
+class OfferVariantResponse(BaseModel):
+    offer: OfferResponse
+
+    class Config:
+        from_attributes = True
+
+
+# -------------------------
 # Variant Schemas
 # -------------------------
 
@@ -52,6 +63,7 @@ class VariantBase(BaseModel):
     base_price: float
     stock_quantity: float
     image_url: Optional[str] = None
+    sales_price: Optional[float] = None
 
 
 # Used when creating product variants
@@ -72,7 +84,18 @@ class VariantUpdate(BaseModel):
 # Variant returned in API responses
 class VariantResponse(VariantBase):
     id: int
+
+    # Field(exclude=True) — read from DB for flattening but never sent in response
+    offer_variants: List[OfferVariantResponse] = Field(default=[], exclude=True)
+
+    # Clean flattened offers list — this is what the UI receives
     offers: List[OfferResponse] = []
+
+    @model_validator(mode="after")
+    def flatten_offers(self) -> "VariantResponse":
+        if self.offer_variants:
+            self.offers = [ov.offer for ov in self.offer_variants]
+        return self
 
     class Config:
         from_attributes = True

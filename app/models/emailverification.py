@@ -1,4 +1,4 @@
-from sqlalchemy import Column, BigInteger, ForeignKey, String, DateTime
+from sqlalchemy import Column, Integer, ForeignKey, String, DateTime
 from datetime import datetime
 from app.database import Base
 
@@ -7,9 +7,9 @@ class EmailVerificationToken(Base):
 
     __tablename__ = "email_verification_tokens"
 
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
-    user_id = Column(BigInteger, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
 
     token = Column(String(255))
 

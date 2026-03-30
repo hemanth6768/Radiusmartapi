@@ -26,12 +26,7 @@ class BrandRepository:
             raise
 
     def get_all(self):
-        return (
-            self.db.query(Brand)
-            .filter(Brand.is_active == True)
-            .order_by(Brand.id)
-            .all()
-        )
+     return self.db.query(Brand).all()
 
     def get_by_id(self, brand_id: int):
         return (

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, BigInteger, ForeignKey , String , DateTime
+from sqlalchemy import Column, Integer, ForeignKey , String , DateTime
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.database import Base
@@ -9,9 +9,9 @@ class AuthAuditLog(Base):
 
     __tablename__ = "auth_audit_logs"
 
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
-    user_id = Column(BigInteger, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
 
     action = Column(String(100))
 

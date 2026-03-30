@@ -1,11 +1,13 @@
 from app.Repository.home_repository import HomeRepository
+from app.Service.offer_service import OfferService
 from app.core.logger import logger
 
 
 class HomeService:
 
-    def __init__(self, repo: HomeRepository):
+    def __init__(self, repo: HomeRepository, offer_service: OfferService):
         self.repo = repo
+        self.offer_service = offer_service
 
     def get_home_data(self):
 
@@ -38,7 +40,7 @@ class HomeService:
 
                 products = product_map.get(category.id, [])[:5]
 
-                # Prepare images
+                # Prepare images + compute sales_price
                 for product in products:
                     if product.image_url:
                         product.image_url = f"/static/{product.image_url}"
@@ -46,6 +48,16 @@ class HomeService:
                     for variant in product.variants:
                         if variant.image_url:
                             variant.image_url = f"/static/{variant.image_url}"
+
+                        # Pick best active offer by priority and compute sales_price
+                        active_offers = self.offer_service.get_active_offers_for_variant(variant.id)
+
+                        if active_offers:
+                            best_offer = min(active_offers, key=lambda o: o.priority)
+                            variant.sales_price = OfferService._apply_discount(
+                                variant.base_price, best_offer
+                            )
+                        # else: keep existing sales_price as-is
 
                 next_cursor = str(products[-1].id) if products else None
 

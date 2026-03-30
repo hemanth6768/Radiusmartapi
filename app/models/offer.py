@@ -16,6 +16,8 @@ class Offer(Base):
 
     discount_value = Column(Float, nullable=False)
 
+    priority = Column(Integer, default=1, index=True)
+
     start_date = Column(DateTime)
 
     end_date = Column(DateTime)

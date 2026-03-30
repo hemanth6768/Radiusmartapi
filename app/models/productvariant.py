@@ -16,6 +16,8 @@ class ProductVariant(Base):
 
     base_price = Column(Float, nullable=False)
 
+    sales_price = Column(Float, nullable=True)
+
     value = Column(Float, nullable=True)
 
     image_url = Column(String(500), nullable=True)

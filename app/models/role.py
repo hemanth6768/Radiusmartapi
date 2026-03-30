@@ -1,4 +1,4 @@
-from sqlalchemy import Column, BigInteger, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.database import Base
@@ -8,7 +8,7 @@ class Role(Base):
 
     __tablename__ = "roles"
 
-    id = Column(BigInteger, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
     name = Column(String(100), unique=True)
 

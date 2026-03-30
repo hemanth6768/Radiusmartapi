@@ -5,7 +5,7 @@ from app.schemas.product import ProductCreate, ProductUpdate, ProductResponse
 from app.schemas.pagination import CursorPage
 from app.Service.product_service import ProductService
 from app.dependencies.product_dependency import get_product_service
-
+from app.dependencies.auth_dependency import require_role
 
 router = APIRouter(prefix="/products", tags=["Products"])
 
@@ -57,7 +57,8 @@ def get_products_by_category(
     category_id: int,
     cursor: Optional[str] = Query(None),
     limit: int = Query(10, ge=1, le=50),
-    service: ProductService = Depends(get_product_service)
+    service: ProductService = Depends(get_product_service),
+    
 ):
     return service.get_products_by_category(category_id, cursor, limit)
 
