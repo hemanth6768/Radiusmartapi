@@ -1,6 +1,8 @@
 from pydantic import BaseModel
-from typing import Optional , List
+from typing import Optional, List, Generic, TypeVar
 from datetime import datetime
+
+T = TypeVar("T")
 
 
 class CategoryBase(BaseModel):
@@ -30,6 +32,7 @@ class CategoryResponse(CategoryBase):
     class Config:
         from_attributes = True
 
+
 class SectionWithCategories(BaseModel):
     id: int
     name: str
@@ -40,3 +43,9 @@ class SectionWithCategories(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class CursorPage(BaseModel, Generic[T]):
+    items: List[T]
+    next_cursor: Optional[str] = None   # None means no more pages
+    has_next: bool

@@ -1,6 +1,6 @@
 import secrets
 import os
-
+from dotenv import load_dotenv
 import httpx
 from fastapi import APIRouter, Depends, Request, HTTPException, Response
 from fastapi.responses import RedirectResponse, JSONResponse
@@ -14,6 +14,16 @@ from app.core.logger import logger
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
+
+load_dotenv()
+
+def get_env(name: str, default: str = None, required: bool = True):
+    value = os.getenv(name, default)
+    if required and not value:
+        raise Exception(f"{name} not set in environment")
+    return value
+
+
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 REDIRECT_URI = os.getenv("REDIRECT_URI")

@@ -179,7 +179,7 @@ def get_all_orders(
     status:    Optional[OrderStatus] = Query(None),
     from_date: Optional[datetime]    = Query(None),
     to_date:   Optional[datetime]    = Query(None),
-    current_user: dict               = Depends(require_role("admin")),
+    current_user: dict               = Depends(require_role("Admin")),
     service: OrderService            = Depends(get_order_service),
 ):
     try:

@@ -77,7 +77,7 @@ class ProductPreview(BaseModel):
 class CategoryWithProducts(BaseModel):
     id: int
     name: str
-    next_cursor: Optional[str]
+    next_cursor: Optional[str]   # last product id — use with /category/{id}/products?cursor=
     products: List[ProductPreview]
 
     class Config:

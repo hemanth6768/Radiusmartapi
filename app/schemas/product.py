@@ -77,6 +77,7 @@ class VariantUpdate(BaseModel):
     base_unit: Optional[str] = None
     value: Optional[float] = None
     base_price: Optional[float] = None
+    sales_price: Optional[float] = None      # ← add this, it was missing
     stock_quantity: Optional[float] = None
     image_url: Optional[str] = None
 

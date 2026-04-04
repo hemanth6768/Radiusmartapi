@@ -13,42 +13,21 @@ class CategoryRepository:
     def create(self, category: CategoryCreate):
         try:
             db_category = Category(**category.model_dump())
-
             self.db.add(db_category)
             self.db.commit()
             self.db.refresh(db_category)
-
             logger.info(f"Category created id={db_category.id}")
             return db_category
-
         except Exception as e:
             logger.error(f"Error creating category: {str(e)}")
             self.db.rollback()
             raise
-
-    def get_all(self):
-        return (
-            self.db.query(Category)
-            .filter(Category.is_active == True)
-            .order_by(Category.id)
-            .all()
-        )
 
     def get_by_id(self, category_id: int):
         return (
             self.db.query(Category)
             .filter(Category.id == category_id)
             .first()
-        )
-
-    def get_by_section(self, section_id: int):
-        return (
-            self.db.query(Category)
-            .filter(
-                Category.section_id == section_id,
-                Category.is_active == True
-            )
-            .all()
         )
 
     def get_by_name_and_section(self, name: str, section_id: int):
@@ -61,28 +40,14 @@ class CategoryRepository:
             .first()
         )
 
-    def get_sections_with_categories(self):
-        return (
-            self.db.query(Section)
-            .options(joinedload(Section.categories))
-            .filter(Section.is_active == True)
-            .order_by(Section.display_order)
-            .all()
-        )
-
     def update(self, db_category: Category, updates: CategoryUpdate):
         try:
-            update_data = updates.model_dump(exclude_unset=True)
-
-            for key, value in update_data.items():
+            for key, value in updates.model_dump(exclude_unset=True).items():
                 setattr(db_category, key, value)
-
             self.db.commit()
             self.db.refresh(db_category)
-
             logger.info(f"Category updated id={db_category.id}")
             return db_category
-
         except Exception as e:
             logger.error(f"Error updating category: {str(e)}")
             self.db.rollback()
@@ -90,14 +55,51 @@ class CategoryRepository:
 
     def delete(self, db_category: Category):
         try:
-            # ✅ Soft delete (recommended)
             db_category.is_active = False
             self.db.commit()
-
             logger.info(f"Category deleted id={db_category.id}")
             return db_category
-
         except Exception as e:
             logger.error(f"Error deleting category: {str(e)}")
             self.db.rollback()
             raise
+
+    # ── paginated fetchers ────────────────────────────────────────────────────
+
+    def get_all_paginated(self, after_id: int | None, limit: int) -> list[Category]:
+        q = self.db.query(Category).filter(Category.is_active == True)
+
+        if after_id is not None:
+            q = q.filter(Category.id > after_id)
+
+        return q.order_by(Category.id.asc()).limit(limit + 1).all()
+
+    def get_by_section_paginated(
+        self, section_id: int, after_id: int | None, limit: int
+    ) -> list[Category]:
+        q = (
+            self.db.query(Category)
+            .filter(
+                Category.section_id == section_id,
+                Category.is_active == True
+            )
+        )
+
+        if after_id is not None:
+            q = q.filter(Category.id > after_id)
+
+        return q.order_by(Category.id.asc()).limit(limit + 1).all()
+
+    def get_sections_paginated(
+        self, after_order: int | None, limit: int
+    ) -> list[Section]:
+        q = (
+            self.db.query(Section)
+            .options(joinedload(Section.categories))
+            .filter(Section.is_active == True)
+        )
+
+        if after_order is not None:
+            q = q.filter(Section.display_order > after_order)
+
+        return q.order_by(Section.display_order.asc()).limit(limit + 1).all()

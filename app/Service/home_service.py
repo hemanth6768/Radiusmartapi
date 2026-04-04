@@ -23,7 +23,7 @@ class HomeService:
             for category in section.categories:
                 category_ids.append(category.id)
 
-        # Get all products in ONE query
+        # Get first 5 products per category — ONE DB query
         all_products = self.repo.get_products_by_category_ids(category_ids)
 
         # Group products by category_id
@@ -38,18 +38,19 @@ class HomeService:
 
             for category in section.categories:
 
-                products = product_map.get(category.id, [])[:5]
+                # ✅ No [:5] slice here — DB already limits to 5
+                products = product_map.get(category.id, [])
 
-                # Prepare images + compute sales_price
+                # Enrich images + compute sales_price
                 for product in products:
-                    if product.image_url:
+                    if product.image_url and not product.image_url.startswith("/static/"):
                         product.image_url = f"/static/{product.image_url}"
 
                     for variant in product.variants:
-                        if variant.image_url:
+                        if variant.image_url and not variant.image_url.startswith("/static/"):
                             variant.image_url = f"/static/{variant.image_url}"
 
-                        # Pick best active offer by priority and compute sales_price
+                        # Pick best active offer and compute sales_price
                         active_offers = self.offer_service.get_active_offers_for_variant(variant.id)
 
                         if active_offers:
@@ -59,13 +60,15 @@ class HomeService:
                             )
                         # else: keep existing sales_price as-is
 
+                # next_cursor = last product id in this category
+                # frontend uses this to call GET /home/category/{id}/products?cursor=xxx
                 next_cursor = str(products[-1].id) if products else None
 
                 categories_data.append({
                     "id": category.id,
                     "name": category.name,
-                    "products": products,
-                    "next_cursor": next_cursor
+                    "next_cursor": next_cursor,
+                    "products": products
                 })
 
             sections_data.append({

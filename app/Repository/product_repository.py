@@ -56,7 +56,7 @@ class ProductRepository:
                 joinedload(Product.category),
                 joinedload(Product.variants)
                     .joinedload(ProductVariant.offer_variants)
-                    .joinedload(OfferVariant.offer)   # ← chain through join table
+                    .joinedload(OfferVariant.offer)
             )
             .filter(Product.is_active == True)
             .order_by(Product.id)
@@ -65,26 +65,20 @@ class ProductRepository:
     # Cursor pagination
     def get_products_cursor(self, last_id: int | None, limit: int):
         query = self.base_query()
-
         if last_id:
             query = query.filter(Product.id > last_id)
-
         return query.limit(limit + 1).all()
 
     def get_products_by_category_cursor(self, category_id, last_id, limit):
         query = self.base_query().filter(Product.category_id == category_id)
-
         if last_id:
             query = query.filter(Product.id > last_id)
-
         return query.limit(limit + 1).all()
 
     def get_products_by_brand_cursor(self, brand_id, last_id, limit):
         query = self.base_query().filter(Product.brand_id == brand_id)
-
         if last_id:
             query = query.filter(Product.id > last_id)
-
         return query.limit(limit + 1).all()
 
     def get_product_by_id(self, product_id: int):
@@ -96,9 +90,7 @@ class ProductRepository:
 
     def update_product(self, product, updates):
         try:
-            update_data = updates.model_dump(exclude_unset=True)
-
-            for key, value in update_data.items():
+            for key, value in updates.model_dump(exclude_unset=True).items():
                 setattr(product, key, value)
 
             self.db.commit()
@@ -114,30 +106,35 @@ class ProductRepository:
 
     def delete_product(self, product):
         try:
-            # Soft delete
             product.is_active = False
             self.db.commit()
-
-            logger.info(f"Product deleted id={product.id}")
+            logger.info(f"Product soft-deleted id={product.id}")
 
         except Exception as e:
             logger.error(f"Error deleting product: {str(e)}")
             self.db.rollback()
             raise
 
+    # ------------------------------------------------------------------ #
+    #  Variant methods                                                     #
+    # ------------------------------------------------------------------ #
+
     def get_variant_by_id(self, variant_id: int):
-        return self.db.query(ProductVariant).filter(ProductVariant.id == variant_id).first()
+        return (
+            self.db.query(ProductVariant)
+            .filter(ProductVariant.id == variant_id)
+            .first()
+        )
 
     def update_variant(self, variant, updates):
         try:
-            update_data = updates.model_dump(exclude_unset=True)
-
-            for key, value in update_data.items():
+            for key, value in updates.model_dump(exclude_unset=True).items():
                 setattr(variant, key, value)
 
             self.db.commit()
             self.db.refresh(variant)
 
+            logger.info(f"Variant updated id={variant.id}")
             return variant
 
         except Exception as e:
@@ -149,6 +146,8 @@ class ProductRepository:
         try:
             self.db.delete(variant)
             self.db.commit()
+            logger.info(f"Variant deleted id={variant.id}")
+
         except Exception as e:
             logger.error(f"Error deleting variant: {str(e)}")
             self.db.rollback()

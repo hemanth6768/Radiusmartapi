@@ -31,7 +31,8 @@ class AdminService:
                 value=float(row["value"]),
                 base_price=float(row["base_price"]),
                 stock_quantity=int(row["stock_quantity"]),
-                image_url=row["variant_image_url"]
+                image_url=row["variant_image_url"] or None,                          # ✅ Fixed
+                sales_price=float(row["sales_price"]) if row["sales_price"] else None # ✅ Fixed
             )
 
             products_dict[row["name"]].append((row, variant))
@@ -49,7 +50,7 @@ class AdminService:
                 description=row["description"],
                 category_id=int(row["category_id"]),
                 brand_id=int(row["brand_id"]) if row["brand_id"] else None,
-                image_url=row["image_url"],
+                image_url=row["image_url"] or None,                                   # ✅ Fixed
                 is_active=row["is_active"].lower() == "true",
                 variants=variants
             )

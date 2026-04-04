@@ -45,7 +45,8 @@ class AdminRepository:
                     "value": variant.value,
                     "base_price": variant.base_price,
                     "stock_quantity": variant.stock_quantity,
-                    "image_url": variant.image_url
+                    "image_url": variant.image_url,
+                    "sales_price": variant.sales_price
                 })
 
         # Step 5: Bulk insert variants
