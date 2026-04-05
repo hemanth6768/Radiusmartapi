@@ -186,3 +186,21 @@ class OrderRepository:
         if not order:
             raise OrderNotFoundException(f"Order {order_id} not found")
         return order
+    
+    def delete_order(self, order_id: int, user_id: int | None = None) -> Order:
+     """
+      Soft-delete not implemented — this is a hard delete.
+      Pass user_id to scope the lookup to a specific user (customer use-case).
+      Omit user_id to allow admin to delete any order.
+     """
+     query = self.db.query(Order).filter(Order.id == order_id)
+     if user_id is not None:
+        query = query.filter(Order.user_id == user_id)
+
+     order = query.first()
+     if not order:
+        raise OrderNotFoundException(f"Order {order_id} not found.")
+
+     self.db.delete(order)
+     self.db.commit()
+     return order

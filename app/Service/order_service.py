@@ -363,3 +363,18 @@ class OrderService:
         Replace with coupon / bulk-pricing logic as needed.
         """
         return 0.0
+    
+    def delete_order(self, order_id: int, user_id: int | None = None) -> Order:
+      """
+       Customers can only delete their own pending orders.
+       Admins pass user_id=None to bypass ownership check.
+      """
+      order = self.repo.get_order_by_id(order_id, user_id)  # reuse your existing fetch
+
+    # Prevent deletion of in-flight or completed orders
+      if user_id is not None and order.status not in ("pending",):
+        raise InvalidOrderRequestException(
+            f"Order {order_id} cannot be deleted in '{order.status}' status."
+        )
+
+      return self.repo.delete_order(order_id, user_id)

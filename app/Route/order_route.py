@@ -215,3 +215,46 @@ def get_order_by_id_admin(
     except Exception:
         logger.exception("Unexpected error in get_order_by_id_admin order=%d", order_id)
         raise HTTPException(status_code=500, detail="An unexpected error occurred.")
+
+
+# ─── Customer: delete own pending order ───────────────────────────────────────
+
+@router.delete(
+    "/my/{order_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete my order (pending only)",
+)
+def delete_my_order(
+    order_id: int,
+    current_user: dict    = Depends(get_current_user),
+    service: OrderService = Depends(get_order_service),
+):
+    user_id = int(current_user["sub"])
+    try:
+        service.delete_order(order_id, user_id=user_id)
+    except (OrderNotFoundException, InvalidOrderRequestException) as exc:
+        raise _handle_domain_exception(exc)
+    except Exception:
+        logger.exception("Unexpected error in delete_my_order user=%d order=%d", user_id, order_id)
+        raise HTTPException(status_code=500, detail="An unexpected error occurred.")
+
+
+# ─── Admin: delete any order ──────────────────────────────────────────────────
+
+@router.delete(
+    "/admin/{order_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="[Admin] Delete any order",
+)
+def delete_order_admin(
+    order_id: int,
+    current_user: dict    = Depends(require_role("Admin")),
+    service: OrderService = Depends(get_order_service),
+):
+    try:
+        service.delete_order(order_id, user_id=None)   # no ownership check
+    except OrderNotFoundException as exc:
+        raise _handle_domain_exception(exc)
+    except Exception:
+        logger.exception("Unexpected error in delete_order_admin order=%d", order_id)
+        raise HTTPException(status_code=500, detail="An unexpected error occurred.")

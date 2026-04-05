@@ -51,8 +51,8 @@ def _set_access_cookie(response: Response, token: str) -> None:
     response.set_cookie(
         "access_token", token,
         httponly=True,
-        secure=IS_PROD,
-        samesite="lax",
+        secure=True,
+        samesite="none",
         max_age=1800,
     )
 
@@ -61,8 +61,8 @@ def _set_refresh_cookie(response: Response, token: str) -> None:
     response.set_cookie(
         "refresh_token", token,
         httponly=True,
-        secure=IS_PROD,
-        samesite="lax",
+        secure=True,
+        samesite="none",
         max_age=604800,
     )
 
@@ -98,8 +98,8 @@ def login_google(request: Request):
     response.set_cookie(
         "oauth_state", state,
         httponly=True,
-        secure=IS_PROD,
-        samesite="lax",
+        secure=True,
+        samesite="none",
         max_age=300,
     )
     return response
